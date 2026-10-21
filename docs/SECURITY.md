@@ -1,0 +1,14 @@
+# Security model
+Wallet secrets never reach the application. Wallet Standard SIWS or signMessage signs an exact server-created challenge. Domain, URI, account, nonce, issued/expiry timestamps are embedded in signed bytes. Server checks its stored domain and wallet, challenge age, signature, expiry and unused state. Challenge consumption and session creation are atomic. A concurrent replay cannot succeed.
+
+Sessions are 32 random bytes; only SHA-256 hashes persist. Cookies are HttpOnly, SameSite Strict and Secure when APP_ORIGIN is HTTPS. Local HTTP development necessarily uses a non-Secure cookie. Origin checks apply to every REST mutation, including login. JSON parsing is bounded by Nest defaults. Helmet, REST rate limits and Zod reject malformed requests. Credentials and signatures are not logged. Admin roles must be provisioned by a trusted database operator; no role-changing endpoint exists.
+
+Colyseus validates request Origin, a one-use 256-bit ticket, live session, fish ownership, and a PostgreSQL partial unique index. Clients send intent, never position, biomass, damage, HP or food collection. Simulation normalizes inputs, limits boost stamina and spatially verifies food and prey collisions. Session revocation is enforced within five seconds. Invalid websocket frames have a 4 KB transport limit.
+
+Every acquisition uses a database-locked order. Fish.orderId and DevnetTransaction.signature are unique. Fish grant, transaction record, order status and audit log commit together. Existing fulfilled orders return their original fish. Ownership is separated from survival runs, and a database trigger prohibits owner reassignment. No trading, resale, paid power, paid loot boxes, cash-out or gambling exists.
+
+Mainnet and real-payment flags accept only literal false; SOLANA_NETWORK accepts only devnet. Production refuses either testing checkout flag. Devnet verification checks RPC genesis hash before any transaction lookup. Finalized transactions only: exactly one System transfer, one unique memo, exact payer, recipient and integer lamports, successful metadata, and order time window. No fallback RPC or Mainnet exists. The memo binds payer, user-owned order and intent; a signature cannot fulfill a second order.
+
+A dedicated public Devnet treasury address is configured by the developer. No private treasury key is required. Devnet checkout is opt-in and needs Redis for durable BullMQ verification retries. A frontend wallet prompt occurs only after an explicit button click. Test currency has no claim to monetary value.
+
+Scope limits: one API simulation process; no distributed anti-DDoS edge, automated key rotation, account recovery, on-chain NFT ownership, or independent security audit. Perform an infrastructure and penetration review before public production exposure.

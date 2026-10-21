@@ -1,0 +1,19 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "deploy/Dockerfile.api"
+  },
+  "deploy": {
+    "startCommand": "node --import tsx apps/api/src/main.ts",
+    "preDeployCommand": [
+      "node --import tsx scripts/migrate.ts",
+      "node --import tsx prisma/seed.ts"
+    ],
+    "healthcheckPath": "/api/v1/health",
+    "restartPolicyType": "ON_FAILURE",
+    "numReplicas": 1,
+    "overlapSeconds": 0,
+    "drainingSeconds": 15
+  }
+}

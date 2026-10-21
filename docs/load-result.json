@@ -1,0 +1,12 @@
+{
+  "kind": "local simulation benchmark; not a network capacity certification",
+  "players": 50,
+  "ticks": 2000,
+  "simulationHz": 20,
+  "networkHz": 10,
+  "p50Ms": 0.151046000000008,
+  "p95Ms": 0.27580299999999625,
+  "p99Ms": 0.39120500000001357,
+  "maxMs": 1.9793750000000045,
+  "recordedAt": "2026-10-21T13:32:56.732Z"
+}

@@ -1,0 +1,181 @@
+generator client {
+ provider = "prisma-client-js"
+ engineType = "client"
+}
+datasource db {
+ provider = "postgresql"
+ url = env("DATABASE_URL")
+}
+model User {
+ id String @id @default(uuid())
+ role String @default("PLAYER")
+ createdAt DateTime @default(now())
+ wallets WalletAccount[]
+ sessions Session[]
+ fish OwnedFish[]
+ orders FishAcquisitionOrder[]
+ runs FishSurvivalRun[]
+ pearls PearlLedger[]
+ achievements PlayerAchievement[]
+ participants ArenaParticipant[]
+}
+model WalletAccount {
+ id String @id @default(uuid())
+ publicKey String @unique
+ userId String
+ user User @relation(fields:[userId], references:[id])
+}
+model AuthChallenge {
+ id String @id @default(uuid())
+ publicKey String
+ nonce String @unique
+ message String
+ domain String
+ createdAt DateTime @default(now())
+ expiresAt DateTime
+ usedAt DateTime?
+ @@index([expiresAt])
+}
+model Session {
+ id String @id
+ userId String
+ publicKey String
+ user User @relation(fields:[userId], references:[id])
+ expiresAt DateTime
+ createdAt DateTime @default(now())
+ @@index([userId])
+ @@index([expiresAt])
+}
+model FishSpecies {
+ id String @id
+ displayName String
+ rarity String
+ appearance Json
+ animationRef String
+ active Boolean @default(true)
+ version Int @default(1)
+ metadata Json
+ prices FishCatalogPrice[]
+ fish OwnedFish[]
+ orders FishAcquisitionOrder[]
+}
+model FishCatalogPrice {
+ id String @id @default(uuid())
+ speciesId String
+ species FishSpecies @relation(fields:[speciesId], references:[id])
+ lamports BigInt
+ version Int
+ createdAt DateTime @default(now())
+ @@unique([speciesId,version])
+}
+model OwnedFish {
+ id String @id @default(uuid())
+ ownerId String
+ owner User @relation(fields:[ownerId], references:[id])
+ speciesId String
+ species FishSpecies @relation(fields:[speciesId], references:[id])
+ appearanceId String
+ acquisitionSource String
+ orderId String? @unique
+ order FishAcquisitionOrder? @relation(fields:[orderId], references:[id])
+ createdAt DateTime @default(now())
+ status String @default("OWNED")
+ runs FishSurvivalRun[]
+ @@index([ownerId,status])
+}
+model FishAcquisitionOrder {
+ id String @id @default(uuid())
+ userId String
+ user User @relation(fields:[userId], references:[id])
+ payer String
+ speciesId String
+ species FishSpecies @relation(fields:[speciesId], references:[id])
+ appearanceId String
+ mode String
+ status String @default("PENDING")
+ priceLamports BigInt
+ destination String
+ intent String @unique @default(uuid())
+ createdAt DateTime @default(now())
+ expiresAt DateTime
+ fulfilledAt DateTime?
+ fish OwnedFish?
+ transaction DevnetTransaction?
+ @@index([userId,createdAt])
+}
+model DevnetTransaction {
+ id String @id @default(uuid())
+ signature String @unique
+ orderId String @unique
+ order FishAcquisitionOrder @relation(fields:[orderId], references:[id])
+ status String
+ slot BigInt
+ createdAt DateTime @default(now())
+}
+model FishSurvivalRun {
+ id String @id @default(uuid())
+ userId String
+ user User @relation(fields:[userId], references:[id])
+ fishId String
+ fish OwnedFish @relation(fields:[fishId], references:[id])
+ roomId String
+ mode String
+ startedAt DateTime @default(now())
+ endedAt DateTime?
+ biomass Float @default(10)
+ cause String?
+ @@index([userId,endedAt])
+ @@index([fishId,endedAt])
+}
+model ArenaMatch {
+ id String @id
+ startedAt DateTime @default(now())
+ endedAt DateTime?
+ participants ArenaParticipant[]
+}
+model ArenaParticipant {
+ id String @id @default(uuid())
+ matchId String
+ match ArenaMatch @relation(fields:[matchId], references:[id])
+ userId String
+ user User @relation(fields:[userId], references:[id])
+ biomass Float
+ rank Int
+ @@unique([matchId,userId])
+}
+model GameEvent {
+ id String @id @default(uuid())
+ runId String
+ type String
+ data Json
+ createdAt DateTime @default(now())
+ @@index([runId])
+}
+model PearlLedger {
+ id String @id @default(uuid())
+ userId String
+ user User @relation(fields:[userId], references:[id])
+ amount Int
+ reason String
+ reference String @unique
+ createdAt DateTime @default(now())
+ @@index([userId])
+}
+model PlayerAchievement {
+ id String @id @default(uuid())
+ userId String
+ user User @relation(fields:[userId], references:[id])
+ code String
+ createdAt DateTime @default(now())
+ @@unique([userId,code])
+}
+model AuditLog {
+ id String @id @default(uuid())
+ actorId String?
+ action String
+ entityId String
+ data Json
+ createdAt DateTime @default(now())
+ @@index([entityId])
+ @@index([createdAt])
+}

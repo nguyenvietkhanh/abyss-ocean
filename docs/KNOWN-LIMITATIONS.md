@@ -1,0 +1,11 @@
+# Known limitations
+- Railway has not deployed this app. Project creation returned `Deploys have been paused temporarily`. No game domain has been generated. The selected GitHub repository is now accessible; the remaining infrastructure blocker is Railway project creation.
+- Devnet checkout remains disabled. Signature/transfer/memo/finality validation is unit-tested with mocked RPC. No live Devnet transfer, external wallet extension certification, or Redis outage/retry recovery test has been completed.
+- Browser tests use a Wallet Standard test wallet with real ephemeral Ed25519 signatures. They do not prove every third-party wallet implementation works.
+- Only one simulation process is supported. Database startup recovery closes stale runs. Rolling deployment briefly overlaps processes on Railway; configure a maintenance window for simulation updates until shared process ownership and distributed room presence are implemented.
+- Room capacity is configured at 50. The local benchmark measures 50 simulated fish, not 50 real network clients. Actual network synchronization and reconnection have been verified with two players and one reconnecting player respectively.
+- Arena rules/timing/reset are tested; a complete five-minute browser match with result persistence has not been exercised end-to-end.
+- The ocean persists in memory for the lifetime of the API process. Inventory and run records persist in PostgreSQL. A server restart rebuilds food and room state and closes old runs rather than restoring positions.
+- Cosmetics are procedural SVG/Phaser artwork. The release has basic mobile steering and boost controls, not full gamepad support or screen-reader gameplay.
+- One-time join tickets are held in process memory. Authentication now runs before room allocation, so invalid tickets cannot create persistent ocean rooms.
+- Security hardening is implemented but has not undergone an independent penetration test. Do not describe this staging release as audited or production-certified.

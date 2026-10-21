@@ -1,0 +1,4 @@
+import {performance} from 'node:perf_hooks';import {writeFileSync} from 'node:fs';import {Simulation} from '../packages/core/src/simulation';
+const s=new Simulation();for(let i=0;i<50;i++){s.spawn(String(i),'load-'+i,'#49dfc5');s.input(String(i),Math.cos(i),Math.sin(i),i%3===0);}
+const timings:number[]=[];for(let i=0;i<2000;i++){const before=performance.now();s.tick(.05);if(i%2===0)JSON.stringify(s.snapshot());timings.push(performance.now()-before);}
+timings.sort((a,b)=>a-b);const result={kind:'local simulation benchmark; not a network capacity certification',players:50,ticks:2000,simulationHz:20,networkHz:10,p50Ms:timings[1000],p95Ms:timings[1900],p99Ms:timings[1980],maxMs:timings[1999],recordedAt:new Date().toISOString()};writeFileSync('docs/load-result.json',JSON.stringify(result,null,2)+'\n');console.log(result);

@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: abyss
+      POSTGRES_PASSWORD: abyss
+      POSTGRES_DB: abyss
+    ports: ["127.0.0.1:15432:5432"]
+    volumes: ["verify-db:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U abyss"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: ["verify-redis:/data"]
+  migrate:
+    image: abyss-ocean-api:verify
+    environment:
+      DATABASE_URL: postgresql://abyss:abyss@postgres:5432/abyss
+    command: ["sh", "-c", "node --import tsx scripts/migrate.ts && node --import tsx prisma/seed.ts"]
+    depends_on:
+      postgres: {condition: service_healthy}
+  api:
+    image: abyss-ocean-api:verify
+    environment:
+      APP_ENV: test
+      APP_ORIGIN: http://localhost:3000
+      DATABASE_URL: postgresql://abyss:abyss@postgres:5432/abyss
+      REDIS_URL: redis://redis:6379
+      SESSION_SECRET: "${SESSION_SECRET:?A test session secret is required}"
+      SOLANA_NETWORK: devnet
+      ENABLE_MAINNET: "false"
+      ENABLE_REAL_PAYMENTS: "false"
+      ENABLE_MOCK_CHECKOUT: "true"
+      ENABLE_DEVNET_CHECKOUT: "false"
+    ports: ["127.0.0.1:3001:3001"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_started}
+  web:
+    image: abyss-ocean-web:verify
+    ports: ["127.0.0.1:3000:3000"]
+    depends_on: [api]
+volumes:
+  verify-db:
+  verify-redis:

@@ -1,0 +1,12 @@
+node_modules
+**/.next
+.env
+.runtime
+.pnpm-store
+test-results
+playwright-report
+.git
+.env.*
+!.env.example
+*.tar.gz
+*.zip
